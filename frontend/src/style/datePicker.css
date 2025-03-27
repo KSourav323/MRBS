@@ -1,0 +1,82 @@
+.calendar-container{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+}
+  
+  /* Container styles */
+.react-calendar {
+  width: 80% !important;  /* Reduced from default 350px */
+  height: 230px !important;  /* Reduced from default 350px */
+  max-width: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  border-radius: 10px;
+  margin: 10px;
+  box-sizing: border-box;
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.268);
+
+}
+
+/* Button styles */
+.react-calendar button {
+  padding: 2px 0 !important;  /* Reduced padding */
+  font-size: 0.65em !important;  /* Smaller font */
+}
+
+.react-calendar__navigation {
+  margin-bottom: 0 !important; /* Remove default margin */
+}
+
+
+/* Navigation buttons */
+.react-calendar__navigation button {
+  min-width: 20px !important;  /* Reduced from default 44px */
+  height: 30px !important;  /* Reduced height */
+  font-size: 0.8em !important;
+}
+
+/* Day tiles */
+.react-calendar__tile {
+  padding: 0.5em 0.5em !important;  /* Reduced padding */
+  height: 25px !important;  /* Fixed height */
+}
+
+/* Today's date highlight */
+.today {
+  background-color: #f8a950 !important;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+}
+
+/* Selected date styles */
+.react-calendar__tile--active {
+  background: #c8c8c8 !important;
+  color: white !important;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+}
+
+
+
+/* Weekday names (Sun, Mon, etc.) */
+.react-calendar__month-view__weekdays {
+  margin-top: 0 !important;
+  font-size: 0.6em !important;
+  font-weight: bold !important;
+  color: #555555;
+  padding: 0 !important;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  padding: 0.2em !important;
+}
+
+.react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none !important;
+  cursor: default;
+}

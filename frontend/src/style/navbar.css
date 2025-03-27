@@ -1,0 +1,58 @@
+#header{
+    background-color: rgb(45, 130, 199);
+    min-height: 60px;
+    height: max-content;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;   
+    align-items: center;
+    
+    #title{
+        color: white;
+        font-size: 15px;
+        width: 25%;
+        h1{
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    #nav{
+        display: flex;
+        flex-wrap: wrap-reverse;
+        width: 75%;
+        justify-content: flex-end;
+        align-items: center;
+        height: fit-content;
+        #nav-btn{
+            display: flex;
+            height: fit-content;
+            justify-content: center;
+            align-items: center;
+            .btns{
+                background: transparent;
+                border: none;
+                border-radius: 5px;
+                height: 25px;
+                width: 50px;
+                color: white;
+                margin: 5px;
+                font-size: 12px;
+            }
+
+            .btns:hover{
+                background-color: rgb(9, 48, 92);
+            }
+        }
+
+        #search{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: fit-content;
+            margin: 10px;
+        }
+        
+    }
+    
+}  
