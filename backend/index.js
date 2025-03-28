@@ -5,8 +5,8 @@ const passport = require('passport');
 const session = require('express-session');
 const app = express();
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const authRoutes = require('./routes/googleAuth'); 
-const routes = require('./routes/routes'); 
+const authRoutes = require('./routes/googleAuth');
+const routes = require('./routes/routes');
 
 
 
@@ -26,20 +26,18 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(cors()); 
-app.use(
-  cors({
-    origin: 'http://localhost:5173', 
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  })
-)
+// CORS configuration
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
-
-app.use(express.json()); 
 
 app.use('/auth', authRoutes);
 app.use('/api', routes);
@@ -50,11 +48,11 @@ passport.use(new GoogleStrategy({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: '/auth/google/callback',
   scope: ['email', 'profile'],
-}, 
-function(accessToken, refreshToken, profile, callback){
-  // console.log(profile);
-  callback(null, profile);
-}));
+},
+  function (accessToken, refreshToken, profile, callback) {
+    // console.log(profile);
+    callback(null, profile);
+  }));
 
 
 passport.serializeUser((user, done) => {
@@ -71,11 +69,11 @@ passport.deserializeUser((user, done) => {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/build')));
-    
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-    });
+  app.use(express.static(path.join(__dirname, '../client/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 

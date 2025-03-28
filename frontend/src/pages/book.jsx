@@ -2,23 +2,19 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../style/book.css'
-import Navbar from'../components/navbar.jsx'
+import Navbar from '../components/navbar.jsx'
 
 const Book = () => {
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    brief_description: 'a',
-    full_description: 'a',
-    date: '23-03-2001',
-    start_time: 'a',
-    end_time: 'a',
-    area: 'aa',
-    room: 'a'
-  });
-  const [dummy, setDummy] = useState({
-    brief_description: 'sda',
-    full_description: 'asdaf',
+    brief_description: '',
+    full_description: '',
+    date: '',
+    start_time: '',
+    end_time: '',
+    area: '',
+    room: ''
   });
 
   const handleChange = (e) => {
@@ -31,68 +27,52 @@ const Book = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form data:', dummy);
     try {
       axios
-      .post('http://localhost:5000/api/addBooking',null,{ withCredentials: true })
-      .then((response) => {
-        if (response.status === 200) {
+        .post('http://localhost:5000/api/addBooking', formData, { withCredentials: true })
+        .then((response) => {
+          if (response.status === 200) {
             alert('Booking successful!');
             navigate('/');
           }
-      })
+        })
     } catch (error) {
       console.error('Booking failed:', error);
       alert('Booking failed: ' + error.response?.data?.message || 'Unknown error');
     }
   };
 
-  const test = () => {
-    axios
-.post('http://localhost:5000/api/test', null, { withCredentials: true })
-.then((response) => {
-  if (response.data.redirect) {
-    window.location.href = response.data.redirect;
-  } else {
-    console.log('Test successful:', response.data);
-  }
-})
-.catch((error) => {
-  console.error('Error fetching user:', error);
-});
-  };
-
 
 
   return (
     <div id='container'>
-        <Navbar/>
-        <div id='form-container'>
-            <h2>Book a Hall</h2>
-            <form onSubmit={handleSubmit}>
-                <div className='form-group'>
-                    <label htmlFor='brief_description'>Brief description</label>
-                    <input
-                    type='text'
-                    id='brief_description'
-                    name='brief_description'
-                    value={formData.brief_description}
-                    onChange={handleChange}
-                    required
-                    />
-                </div>
+      <Navbar />
+      <div id='form-container'>
+        <h2>Book a Hall</h2>
+        <form onSubmit={handleSubmit}>
+          <div className='form-group'>
+            <label htmlFor='brief_description'>Brief description</label>
+            <input
+              type='text'
+              id='brief_description'
+              name='brief_description'
+              value={formData.brief_description}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-                <div className='form-group'>
-                    <label htmlFor='full_description'>Full description</label>
-                    <textarea
-                    id='full_description'
-                    name='full_description'
-                    value={formData.full_description}
-                    onChange={handleChange}
-                    required
-                    />
-                </div>
-
+          <div className='form-group'>
+            <label htmlFor='full_description'>Full description</label>
+            <textarea
+              id='full_description'
+              name='full_description'
+              value={formData.full_description}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
                 <div className='form-group'>
                     <label htmlFor='date'>Date</label>
                     <input
@@ -117,7 +97,7 @@ const Book = () => {
                     />
                 </div>
 
-                <div className='form-group'>
+          <div className='form-group'>
                     <label htmlFor='end_time'>End Time</label>
                     <input
                         type='time'
@@ -143,7 +123,7 @@ const Book = () => {
                     </select>
                 </div>
 
-                <div className='form-group'>
+          <div className='form-group'>
                     <label htmlFor='room'>Room</label>
                     <select
                     id='room'
@@ -157,14 +137,14 @@ const Book = () => {
                     </select>
                 </div>
 
-                <div className='form-buttons'>
-                    <button type='submit'>Book Room</button>
-                    <button type='button' onClick={() => navigate('/')}>Cancel</button>
-                </div>
-          
+          <div className='form-buttons'>
+            <button type='submit'>Book Room</button>
+            <button type='button' onClick={() => navigate('/')}>Cancel</button>
+          </div>
 
-            </form>
-        </div>
+
+        </form>
+      </div>
     </div>
   )
 }

@@ -1,0 +1,15 @@
+#profile-container{
+    width: 100%;
+
+    #profile-details{
+        background-color: beige;
+        width: 100%;
+    }
+
+    #approvals{
+        background-color: rgb(158, 158, 116);
+        height: 20px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import '../style/navbar.css'
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { login, logout } from '../redux/actions.js'
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const [user, setUser] = useState(null);
 
@@ -49,13 +51,29 @@ const Navbar = () => {
   const logout = () => {
     window.location.href = 'http://localhost:5000/auth/logout';
   };
+
+  const goToProfile = () => {
+    navigate('/profile');
+  };
+
+  const goToRooms = () => {
+    navigate('/rooms');
+  };
+
+  const goToUsers = () => {
+    navigate('/users');
+  };
+
+  const home = () => {
+    navigate('/');
+  };
  
 
 
   return (
     <div id='header'>
             <div id='title'>
-                <h1>NITC MRBS</h1>
+                <button id='logo' onClick={home}>NITC MRBS</button>
             </div>
             <div id='nav'>
                 <div id='search'>
@@ -68,9 +86,9 @@ const Navbar = () => {
                         <div>
                             <button className='btns'>Report</button>
                             <button className='btns'>Import</button>
-                            <button className='btns'>Rooms</button>
-                            <button className='btns'>Users</button>
-                            <button className='btns'>{user.given_name[0].toUpperCase() + user.given_name.slice(1)}</button>
+                            <button className='btns' onClick={goToRooms}>Rooms</button>
+                            <button className='btns' onClick={goToUsers}>Users</button>
+                            <button className='btns' onClick={goToProfile}>{user.given_name[0].toUpperCase() + user.given_name.slice(1)}</button>
                             <button className='btns' onClick={logout}>Logout</button>
                         </div>
                     ) : (
