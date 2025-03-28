@@ -1,21 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../style/book.css'
 import Navbar from '../components/navbar.jsx'
+import { useLocation } from 'react-router-dom';
 
 const Book = () => {
-
+  const location = useLocation();
   const navigate = useNavigate();
+  const { areaId, roomId } = location.state || {};
+  
+  const [areas, setAreas] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+
+
   const [formData, setFormData] = useState({
-    brief_description: '',
-    full_description: '',
+    area_id: areaId || '',
+    room_id: roomId || '',
+    subject: '',
+    description: '',
     date: '',
     start_time: '',
-    end_time: '',
-    area: '',
-    room: ''
+    end_time: ''
   });
+
+  useEffect(() => {
+    if (areaId && roomId) {
+      setFormData(prev => ({
+            ...prev,
+            area_id: areaId,
+            room_id: roomId
+        }));
+    }
+  }, [areaId, roomId]);
+
+  useEffect(() => {
+    axios
+        .post('http://localhost:5000/api/listArea', {}, { withCredentials: true })
+        .then((response) => {
+            if (response.status === 201) {
+                setAreas(response.data.data);
+                if (areaId) {
+                  const area = response.data.data.find(a => a.id === areaId);
+                  setSelectedArea(area);
+                }
+            }
+        })
+        .catch((error) => {
+            console.error('failed:', error);
+            alert('failed: ' + error.response?.data?.message || 'Unknown error');
+        });
+  }, [areaId]);
+
+  useEffect(() => {
+    if (selectedArea) {
+        axios
+            .post('http://localhost:5000/api/listRoom',
+                { area_id: selectedArea.id },
+                { withCredentials: true }
+            )
+            .then((response) => {
+                if (response.status === 201) {
+                    setRooms(response.data.data);
+                    if (roomId) {
+                      const room = response.data.data.find(r => r.id === roomId);
+                      setSelectedRoom(room);
+                    }
+                }
+            })
+            .catch((error) => {
+                console.error('Failed to fetch rooms:', error);
+            });
+    }
+}, [selectedArea, roomId]); 
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,7 +91,7 @@ const Book = () => {
       axios
         .post('http://localhost:5000/api/addBooking', formData, { withCredentials: true })
         .then((response) => {
-          if (response.status === 200) {
+          if (response.status === 201) {
             alert('Booking successful!');
             navigate('/');
           }
@@ -43,31 +103,31 @@ const Book = () => {
   };
 
 
-
   return (
     <div id='container'>
       <Navbar />
       <div id='form-container'>
         <h2>Book a Hall</h2>
         <form onSubmit={handleSubmit}>
+
           <div className='form-group'>
-            <label htmlFor='brief_description'>Brief description</label>
+            <label htmlFor='subject'>Brief description</label>
             <input
               type='text'
-              id='brief_description'
-              name='brief_description'
-              value={formData.brief_description}
+              id='subject'
+              name='subject'
+              value={formData.subject}
               onChange={handleChange}
               required
             />
           </div>
 
           <div className='form-group'>
-            <label htmlFor='full_description'>Full description</label>
+            <label htmlFor='description'>Full description</label>
             <textarea
-              id='full_description'
-              name='full_description'
-              value={formData.full_description}
+              id='description'
+              name='description'
+              value={formData.description}
               onChange={handleChange}
               required
             />
@@ -114,12 +174,15 @@ const Book = () => {
                     <select
                     id='area'
                     name='area'
-                    value={formData.area}
+                    value={formData.area_id}
                     onChange={handleChange}
                     required
                     >
-                    <option value='area1'>Area 1</option>
-                    <option value='area2'>Area 2</option>
+                      {areas.map((area) => (
+                                <option key={area.id} value={area.id}>
+                                    {area.area_name}
+                                </option>
+                            ))}
                     </select>
                 </div>
 
@@ -127,13 +190,16 @@ const Book = () => {
                     <label htmlFor='room'>Room</label>
                     <select
                     id='room'
-                    name='room'
-                    value={formData.room}
+                    name='room_id'
+                    value={formData.room_id}
                     onChange={handleChange}
                     required
                     >
-                    <option value='room1'>Room 1</option>
-                    <option value='room2'>Room 2</option>
+                      {rooms.map(room => (
+                          <option key={room.id} value={room.id}>
+                            {room.room_name}
+                        </option>
+                        ))}
                     </select>
                 </div>
 

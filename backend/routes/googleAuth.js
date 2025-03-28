@@ -1,32 +1,28 @@
 const express = require('express');   
 const router = express.Router();
 const passport = require('passport');
+const pool = require('../functions/db');
 
-router.get('/login/success', (req, res) => {
+router.get('/login/success', async (req, res) => {
   if (req.user) {
-    res.status(200).json({
+
+    const [userLevel] = await pool.query(
+      'SELECT level FROM mrbs_users WHERE email = ?',
+      [req.user.emails[0].value]
+    );
+
+    res.status(201).json({
       error: true,
       message: 'User has successfully authenticated',
-      user: req.user,
+      user: {
+        ...req.user,
+        level: userLevel[0]?.level || 1 
+      },
       cookies: req.cookies,
     });
   }
   else {
-    res.status(201).json({
-      message: 'User has not authenticated',
-    });
-  }
-});
-
-router.get('/logout/success', (req, res) => {
-  if (!req.user) {
     res.status(200).json({
-      error: true,
-      message: 'User has successfully logged out'
-    });
-  }
-  else {
-    res.status(201).json({
       message: 'User has not authenticated',
     });
   }
@@ -49,7 +45,6 @@ router.get('/google/callback',
 router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
-
 
 router.get("/logout", (req, res, next) => {
   console.log('logging out');

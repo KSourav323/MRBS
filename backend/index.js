@@ -7,6 +7,7 @@ const app = express();
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const authRoutes = require('./routes/googleAuth');
 const routes = require('./routes/routes');
+const publicRoutes = require('./routes/publicRoutes');
 
 
 
@@ -41,6 +42,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use('/auth', authRoutes);
 app.use('/api', routes);
+app.use('/public', publicRoutes);
 
 
 passport.use(new GoogleStrategy({

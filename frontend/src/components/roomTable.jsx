@@ -9,7 +9,7 @@ const RoomTable = ({ areaId }) => {
             axios
               .post('http://localhost:5000/api/listRoom',{area_id: areaId},{ withCredentials: true })
               .then((response) => {
-                if (response.status === 200) {
+                if (response.status === 201) {
                     setRooms(response.data.data);
                 }
               })

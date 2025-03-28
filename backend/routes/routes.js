@@ -1,8 +1,7 @@
 const express = require('express');   
 const router = express.Router();
-const {auth} = require('../middleware/auth');
+const {auth, isAdmin} = require('../middleware/auth');
 const pool = require('../functions/db');
-const { v4: uuidv4 } = require('uuid');
 
 router.use(auth);
 
@@ -11,7 +10,7 @@ const roleToLevel = {
     admin: 2
   };
 
-router.post('/addUser', async (req, res) => {
+router.post('/addUser', isAdmin, async (req, res) => {
     try {
         const { name, email, role } = req.body;
 
@@ -59,7 +58,7 @@ router.post('/listUser', async (req, res) => {
     try {
         const [results] = await pool.query('SELECT * FROM mrbs_users');
         
-        res.status(200).json({ 
+        res.status(201).json({ 
             success: true,
             data: results, 
             message: 'List of users' 
@@ -74,9 +73,9 @@ router.post('/listUser', async (req, res) => {
     }
 });
 
-router.post('/addArea', async (req, res) => {
+router.post('/addArea', isAdmin, async (req, res) => {
     try {
-        const { areaName, areaAdminEmail } = req.body;
+        const { areaName, areaAdminEmail, approvalEnabled, isPublic } = req.body;
         
         const [existingArea] = await pool.query(
             'SELECT * FROM mrbs_area WHERE area_name = ?',
@@ -91,8 +90,8 @@ router.post('/addArea', async (req, res) => {
         }
 
         const [result] = await pool.query(
-            'INSERT INTO mrbs_area (area_name, area_admin_email, approval_enabled) VALUES (?, ?, ?)',
-            [areaName, areaAdminEmail, 1]
+            'INSERT INTO mrbs_area (area_name, area_admin_email, approval_enabled, is_public) VALUES (?, ?, ?, ?)',
+            [areaName, areaAdminEmail, approvalEnabled, isPublic]
         );
 
         if (result.affectedRows === 1) {
@@ -118,7 +117,7 @@ router.post('/listArea', async (req, res) => {
     try {
         const [results] = await pool.query('SELECT * FROM mrbs_area');
         
-        res.status(200).json({ 
+        res.status(201).json({ 
             success: true,
             data: results, 
             message: 'List of areas' 
@@ -133,7 +132,7 @@ router.post('/listArea', async (req, res) => {
     }
 });
 
-router.post('/addRoom', async (req, res) => {
+router.post('/addRoom', isAdmin, async (req, res) => {
     try {
         const { areaId, roomName, description, capacity, roomAdminEmail } = req.body;
         
@@ -181,7 +180,7 @@ router.post('/listRoom', async (req, res) => {
             [area_id]
         );
         
-        res.status(200).json({ 
+        res.status(201).json({ 
             success: true,
             data: results, 
             message: 'List of rooms' 
@@ -198,25 +197,11 @@ router.post('/listRoom', async (req, res) => {
 
 router.post('/addBooking', async (req, res) => {
     try {
-        const { name, email, role } = req.body;
-
-       const level = roleToLevel[role]
-        
-        const [existingUser] = await pool.query(
-            'SELECT * FROM mrbs_users WHERE email = ?',
-            [email]
-        );
-
-        if (existingUser.length > 0) {
-            return res.status(409).json({ 
-                success: false, 
-                message: 'User already exists' 
-            });
-        }
-
+        const { area_id, room_id, subject, description, date, start_time, end_time } = req.body;
+        const create_by = req.user.emails[0].value
         const [result] = await pool.query(
-            'INSERT INTO mrbs_users (level, name, email) VALUES (?, ?, ?)',
-            [level, name, email]
+            'INSERT INTO mrbs_entry (area_id, date, start_time, end_time, room_id, create_by, subject, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [area_id, date, start_time, end_time, room_id, create_by, subject, description]
         );
 
         if (result.affectedRows === 1) {
@@ -248,12 +233,50 @@ router.post('/listBooking', (req, res) => {
         }
         console.log('Table contents:', results);
       });
-  res.status(200).json({ message: 'added' });
+  res.status(201).json({ message: 'added' });
+});
+
+router.post('/listRequests', async (req, res) => {
+    try {
+        const { adminEmail } = req.body;
+        const userEmail = req.user.emails[0].value;
+
+        if (adminEmail !== userEmail) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to view these requests'
+            });
+        }
+        
+        const [results] = await pool.query(
+            `SELECT e.*, r.room_name, 
+                    a.area_name, a.area_admin_email
+             FROM mrbs_entry e
+             JOIN mrbs_room r ON e.room_id = r.id
+             JOIN mrbs_area a ON e.area_id = a.id
+             WHERE r.room_admin_email = ?`,
+            [userEmail]
+        );
+        
+        res.status(201).json({ 
+            success: true,
+            data: results, 
+            message: 'List of requests' 
+        });
+    } catch (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Internal server error', 
+            error: error.message 
+        });
+    }
+    
 });
 
 router.post('/addApproval', (req, res) => {
     console.log(req.body);
-  res.status(200).json({ message: 'added' });
+  res.status(201).json({ message: 'added' });
 });
 
 

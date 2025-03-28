@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import '../style/rooms.css'
 import Navbar from '../components/navbar'
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 import RoomTable from '../components/roomTable';
 
 const Rooms = () => {
@@ -9,12 +10,19 @@ const Rooms = () => {
   const [areas, setAreas] = useState([]);
   const [showAreaForm, setShowAreaForm] = useState(false);
   const [showRoomForm, setShowRoomForm] = useState(false);
-  const [areaId, setAreaId] = useState(1);
+  const [areaId, setAreaId] = useState(1); 
   const [roomsUpdated, setRoomsUpdated] = useState(false);
-  
+  const user = useSelector(state => state.user);
+
+  const isAdmin = () => {
+    return user?.user?.level > 1;
+  };
+
   const [areaFormData, setAreaFormData] = useState({
     areaName: '',
-    areaAdminEmail: ''
+    areaAdminEmail: '',
+    approvalEnabled: '',
+    isPublic: ''
   });
 
   const [roomFormData, setRoomFormData] = useState({
@@ -30,7 +38,7 @@ const Rooms = () => {
         axios
           .post('http://localhost:5000/api/listArea',{},{ withCredentials: true })
           .then((response) => {
-            if (response.status === 200) {
+            if (response.status === 201) {
                 setAreas(response.data.data);
             }
           })
@@ -99,17 +107,17 @@ const Rooms = () => {
       areaId: newAreaId
     }));
     setAreaId(newAreaId);
-    console.log(areaId);
   };
 
 
   return (
     <div id='rooms-container'>
         <Navbar/>
-        <div>
+        {isAdmin() && (
+          <div id='admin-panel'>
             <button onClick={() => setShowAreaForm(!showAreaForm)}>Add Area</button>
             {showAreaForm && (
-          <div className='popup-overlay'>
+              <div className='popup-overlay'>
             <div className='popup-content'>
               <h2>Add New Area</h2>
               <form onSubmit={handleAreaSubmit}>
@@ -136,6 +144,62 @@ const Rooms = () => {
                     required
                   />
                 </div>
+
+                <div className='form-group'>
+                  <label>Approval Required</label>
+                  <div className='radio-group'>
+                    <label>
+                      <input
+                        type='radio'
+                        name='approvalEnabled'
+                        value='1'
+                        checked={areaFormData.approvalEnabled === '1'}
+                        onChange={handleAreaFormChange}
+                        required
+                      />
+                      Yes
+                    </label>
+                    <label>
+                      <input
+                        type='radio'
+                        name='approvalEnabled'
+                        value='0'
+                        checked={areaFormData.approvalEnabled === '0'}
+                        onChange={handleAreaFormChange}
+                        required
+                      />
+                      No
+                    </label>
+                </div>
+              </div>
+
+              <div className='form-group'>
+                <label>Public</label>
+                <div className='radio-group'>
+                  <label>
+                    <input
+                      type='radio'
+                      name='isPublic'
+                      value='1'
+                      checked={areaFormData.isPublic === '1'}
+                      onChange={handleAreaFormChange}
+                      required
+                    />
+                    Yes
+                  </label>
+                  <label>
+                    <input
+                      type='radio'
+                      name='isPublic'
+                      value='0'
+                      checked={areaFormData.isPublic === '0'}
+                      onChange={handleAreaFormChange}
+                      required
+                    />
+                    No
+                  </label>
+                </div>
+              </div>
                 
 
                 <div className='form-buttons'>
@@ -211,8 +275,8 @@ const Rooms = () => {
             </div>
           </div>
         )}
-        </div>
-
+          </div>
+        )}
         <select id="area-select" value={areaId} onChange={handleAreaChange}>
         {areas.map((area) => (
           <option key={area.id} value={area.id}>

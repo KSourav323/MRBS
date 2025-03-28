@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../style/navbar.css'
 import { useDispatch } from 'react-redux';
-import { login, logout } from '../redux/actions.js'
+import { login, logout as logoutAction } from '../redux/actions.js'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,29 +20,21 @@ const Navbar = () => {
               fname: response.data.user._json.family_name,
               gname: response.data.user._json.given_name,
               name: response.data.user._json.name,
-              id: response.data.user._json.sub
+              id: response.data.user._json.sub,
+              level: response.data.user.level
             }));
           setUser(response.data.user._json);
         }
-      })
-      .catch((error) => {
-        console.error('Error fetching user:', error);
-      });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .get('http://localhost:5000/auth/logout/success', { withCredentials: true })
-      .then((response) => {
-        if (response.data.user) {
-          dispatch(logout());
+        else{
+          dispatch(logoutAction());
           setUser(null);
         }
       })
       .catch((error) => {
         console.error('Error fetching user:', error);
       });
-  }, []);
+  }, []); 
+
 
   const googleAuth = () => {
     window.location.href = 'http://localhost:5000/auth/google/callback'

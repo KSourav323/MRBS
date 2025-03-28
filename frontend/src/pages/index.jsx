@@ -1,31 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
+import React, { useState, useEffect } from 'react';
 import '../style/index.css'
-
+import axios from 'axios';
 import DatePicker from '../components/datePicker'; 
-import Areas from '../components/areas';
+import Schedule from '../components/schedule.jsx';
 import Navbar from '../components/navbar.jsx';
+import { useSelector } from 'react-redux';
 
 const Index = () => {  
-  const navigate = useNavigate();
-    const [area, setArea] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(null);
-    const items = ['Option 1', 'Option 2', 'Option 3'];
+  const [areas, setAreas] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedArea, setSelectedArea] = useState(null);
+    const user = useSelector(state => state.user);
 
-    const handleSelectArea = (item) => {
-      setArea(item);
-    };
-
+    useEffect(() => {
+        if(user.isLoggedIn){
+            console.log(user.user.level)
+            axios
+          .post('http://localhost:5000/api/listArea', {}, { withCredentials: true })
+          .then((response) => {
+              if (response.status === 201) {
+                  setAreas(response.data.data);
+                  if (response.data.data.length > 0) {
+                      setSelectedArea(response.data.data[0]);
+                  }
+              }
+          })
+          .catch((error) => {
+              console.error('failed:', error);
+              alert('failed: ' + error.response?.data?.message || 'Unknown error');
+          });
+        }
+        else{
+            axios
+          .post('http://localhost:5000/public/listArea', {}, { withCredentials: true })
+          .then((response) => {
+              if (response.status === 201) {
+                  setAreas(response.data.data);
+                  if (response.data.data.length > 0) {
+                      setSelectedArea(response.data.data[0]);
+                  }
+              }
+          })
+          .catch((error) => {
+              console.error('failed:', error);
+              alert('failed: ' + error.response?.data?.message || 'Unknown error');
+          });
+        }
+      
+  }, [user]);
    
       const handleDateSelect = (date) => {
         setSelectedDate(date);
       };
 
-      const bookSlot = () => {
-        navigate('/book');
-      }
-
+      const handleAreaChange = (e) => {
+        const areaId = Number(e.target.value);
+        const selectedArea = areas.find(area => area.id === areaId);
+        if (selectedArea) {
+            setSelectedArea(selectedArea);
+        }
+    };
 
   return (
     <div id='container'> 
@@ -45,18 +79,30 @@ const Index = () => {
                     ? `${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}, ${selectedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`
                     : 'Click a date'}
                 </h3>
-                <div id='opts'>
-                    <Areas items={items} defaultSelected={items[0]} onSelect={handleSelectArea} />
+                  <div id='opts'>
+                    {areas ? (
+                        <select id="area-select" onChange={handleAreaChange}>
+                            {areas.map((area) => (
+                                <option key={area.id} value={area.id}>
+                                    {area.area_name}
+                                </option>
+                            ))}
+                        </select>
+                    ) : (
+                        <p>Loading areas...</p>
+                    )}
                 </div>
                 <div id='table'>
-                    <h1>{area}</h1>
-                  <button onClick={bookSlot}>Book this slot</button>
+                  {selectedArea && (
+                      <Schedule areaId={selectedArea.id}/>
+                    
+                  )}
                 </div>
             </div>
         </div>
 
         <div id='footer'>
-            d
+            NIT Calicut
         </div>
        
  

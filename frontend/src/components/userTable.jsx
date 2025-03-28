@@ -10,7 +10,7 @@ const UserTable = () => {
             axios
               .post('http://localhost:5000/api/listUser',{},{ withCredentials: true })
               .then((response) => {
-                if (response.status === 200) {
+                if (response.status === 201) {
                     setUsers(response.data.data);
                 }
               })
