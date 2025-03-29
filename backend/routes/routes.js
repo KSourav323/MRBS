@@ -254,6 +254,45 @@ router.post('/listRequests', async (req, res) => {
              FROM mrbs_entry e
              JOIN mrbs_room r ON e.room_id = r.id
              JOIN mrbs_area a ON e.area_id = a.id
+             WHERE r.room_admin_email = ? AND e.is_approved = 0`,
+            [userEmail]
+        );
+        
+        res.status(201).json({ 
+            success: true,
+            data: results, 
+            message: 'List of requests' 
+        });
+    } catch (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Internal server error', 
+            error: error.message 
+        });
+    }
+    
+});
+
+router.post('/listMyEntry', async (req, res) => {
+    try {
+        const { adminEmail } = req.body;
+        const userEmail = req.user.emails[0].value;
+        console.log(adminEmail, userEmail)
+
+        if (adminEmail !== userEmail) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to view these requests'
+            });
+        }
+        
+        const [results] = await pool.query(
+            `SELECT e.*, r.room_name, 
+                    a.area_name, a.area_admin_email
+             FROM mrbs_entry e
+             JOIN mrbs_room r ON e.room_id = r.id
+             JOIN mrbs_area a ON e.area_id = a.id
              WHERE r.room_admin_email = ?`,
             [userEmail]
         );
@@ -274,9 +313,49 @@ router.post('/listRequests', async (req, res) => {
     
 });
 
-router.post('/addApproval', (req, res) => {
-    console.log(req.body);
-  res.status(201).json({ message: 'added' });
+router.post('/addApproval', async (req, res) => {
+    try {
+        const { request_id, status } = req.body;
+        const userEmail = req.user.emails[0].value;
+
+        const [request] = await pool.query(
+            `SELECT e.*, r.room_admin_email 
+             FROM mrbs_entry e
+             JOIN mrbs_room r ON e.room_id = r.id
+             WHERE e.id = ? AND r.room_admin_email = ?`,
+            [request_id, userEmail]
+        );
+        
+        if (!request.length) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to approve this request'
+            });
+        }
+
+
+        const [result] = await pool.query(
+            'UPDATE mrbs_entry SET is_approved = ? WHERE id = ?',
+            [status, request_id]
+        );
+
+
+        if (result.affectedRows === 1) {
+            res.status(201).json({
+                success: true,
+                message: 'successful'
+            });
+        } else {
+            throw new Error('Failed to add area');
+        }
+
+    } catch (error) {
+        console.error('Error adding area:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Internal server error' 
+        });
+    }
 });
 
 

@@ -1,11 +1,13 @@
 #header{
-    background-color: rgb(45, 130, 199);
-    min-height: 60px;
+    background: linear-gradient(rgb(15, 52, 31), rgb(6, 50, 29));
+    min-height: 70px;
     height: max-content;
     width: 100%;
     display: flex;
     justify-content: space-between;   
     align-items: center;
+    box-shadow: rgba(0, 0, 0, 0.095) 0px 1px 3px 4px, 
+                        rgba(0, 0, 0, 0.06) 0px 5px 2px 0px;
     
     #title{
         color: white;

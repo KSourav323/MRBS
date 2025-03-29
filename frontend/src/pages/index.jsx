@@ -14,7 +14,6 @@ const Index = () => {
 
     useEffect(() => {
         if(user.isLoggedIn){
-            console.log(user.user.level)
             axios
           .post('http://localhost:5000/api/listArea', {}, { withCredentials: true })
           .then((response) => {
@@ -74,12 +73,14 @@ const Index = () => {
                     /> 
             </div>
             <div id='content'>
-                <h3>
-                  {selectedDate 
-                    ? `${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}, ${selectedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`
-                    : 'Click a date'}
-                </h3>
+                
                   <div id='opts'>
+                    <h3>
+                        {selectedDate 
+                            ? `${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}, ${selectedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                            : 'Click a date'}
+                        </h3>
+
                     {areas ? (
                         <select id="area-select" onChange={handleAreaChange}>
                             {areas.map((area) => (
@@ -91,7 +92,9 @@ const Index = () => {
                     ) : (
                         <p>Loading areas...</p>
                     )}
+                    
                 </div>
+                
                 <div id='table'>
                   {selectedArea && (
                       <Schedule areaId={selectedArea.id}/>

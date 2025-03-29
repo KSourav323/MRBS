@@ -79,6 +79,13 @@ const Book = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'area_id') {
+      const newAreaId = Number(value);
+      const selectedArea = areas.find(area => area.id === newAreaId);
+      setSelectedArea(selectedArea);
+    }
+    
     setFormData(prevState => ({
       ...prevState,
       [name]: value
@@ -173,7 +180,7 @@ const Book = () => {
                     <label htmlFor='area'>Area</label>
                     <select
                     id='area'
-                    name='area'
+                    name='area_id'
                     value={formData.area_id}
                     onChange={handleChange}
                     required

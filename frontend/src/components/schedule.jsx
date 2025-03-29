@@ -9,6 +9,13 @@ const Schedule = ({ areaId }) => {
   const [rooms, setRooms] = useState([]);
   const user = useSelector(state => state.user);
 
+  const timeSlots = Array.from({ length: 33 }, (_, i) => {
+    const totalMinutes = (7 * 60) + (i * 30); // Start from 7:00, increment by 30 mins
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  });
+
     useEffect(() => {
         if (!areaId) return;
         if (user.isLoggedIn) {
@@ -57,23 +64,32 @@ const Schedule = ({ areaId }) => {
     }
 
   return (
-    <div className="schedule">
+    <div id="schedule-container">
             {rooms.length > 0 ? (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Room Name</th>
-                            <th>Description</th>
-                            <th>Capacity</th>
+                <table id='schedule-table'>
+                    <thead id='schedule-head'>
+                        <tr id='schedule-tr'>
+                            <th className='time-col'>Time</th>
+                            {rooms.map(room => (
+                                <th key={room.id}>{room.room_name}</th>
+                            ))}
                         </tr>
                     </thead>
-                    <tbody>
-                        {rooms.map(room => (
-                            <tr key={room.id}>
-                                <td>{room.room_name}<button onClick={()=>{bookSlot(room.id)}}>Book</button></td>
-                                <td>{room.description}</td>
-                                <td>{room.capacity}</td>
-                            </tr>
+                    <tbody id='schedule-body'>
+                        {timeSlots.map((time, index) => (
+                        <tr className='schedule-row' key={index}>
+                            <td className="time-col" >{time}</td> 
+                            {rooms.map(room => (
+                            <td key={`${room.id}-${time}`} className="booking-cell">
+                                <button 
+                                onClick={() => bookSlot(room.id)}
+                                className="book-button"
+                                >
+                                Book
+                                </button>
+                            </td>
+                            ))}
+                        </tr>
                         ))}
                     </tbody>
                 </table>
