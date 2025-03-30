@@ -5,12 +5,20 @@ import DatePicker from '../components/datePicker';
 import Schedule from '../components/schedule.jsx';
 import Navbar from '../components/navbar.jsx';
 import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 const Index = () => {  
   const [areas, setAreas] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
     const [selectedArea, setSelectedArea] = useState(null);
     const user = useSelector(state => state.user);
+    const date = new Date(selectedDate);
+
+    const year = date.getFullYear();
+    const month = ("0" + (date.getMonth() + 1)).slice(-2); 
+    const day = ("0" + date.getDate()).slice(-2);
+
+    const formattedDate = `${year}-${month}-${day}`;
 
     useEffect(() => {
         if(user.isLoggedIn){
@@ -26,7 +34,9 @@ const Index = () => {
           })
           .catch((error) => {
               console.error('failed:', error);
-              alert('failed: ' + error.response?.data?.message || 'Unknown error');
+             toast.error('failed: ' + error.response?.data?.message || 'Unknown error', {
+                                       autoClose: 1000
+                                     });
           });
         }
         else{
@@ -42,7 +52,9 @@ const Index = () => {
           })
           .catch((error) => {
               console.error('failed:', error);
-              alert('failed: ' + error.response?.data?.message || 'Unknown error');
+             toast.error('failed: ' + error.response?.data?.message || 'Unknown error', {
+                                       autoClose: 1000
+                                     });
           });
         }
       
@@ -94,11 +106,10 @@ const Index = () => {
                     )}
                     
                 </div>
-                
+
                 <div id='table'>
                   {selectedArea && (
-                      <Schedule areaId={selectedArea.id}/>
-                    
+                      <Schedule areaId={selectedArea.id} selectedDate={formattedDate}/>
                   )}
                 </div>
             </div>

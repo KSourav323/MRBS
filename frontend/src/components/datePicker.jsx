@@ -13,6 +13,7 @@ const DatePicker = ({ onDateSelect, selectedDate }) => {
   }, []);
 
   const nextMonthDate = new Date(activeStartDate);
+  nextMonthDate.setDate(1);
   nextMonthDate.setMonth(activeStartDate.getMonth() + 1);
 
   const handleActiveStartDateChange = ({ activeStartDate }) => {

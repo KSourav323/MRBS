@@ -20,6 +20,7 @@
             height: 100%;
             width: 230px;
             margin-block: 20px;
+            flex-shrink: 0; 
         }
         #content{
             height: 100%;
@@ -35,6 +36,9 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                margin-top: 10px;
+                padding-inline: 10px;
+                box-sizing: border-box;
                 h3{
                     font-weight: 400;
                 }

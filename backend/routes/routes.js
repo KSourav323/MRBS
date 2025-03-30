@@ -16,20 +16,18 @@ router.post('/addUser', isAdmin, async (req, res) => {
 
        const level = roleToLevel[role]
         
-        // Check if user already exists
         const [existingUser] = await pool.query(
             'SELECT * FROM mrbs_users WHERE email = ?',
             [email]
         );
 
         if (existingUser.length > 0) {
-            return res.status(409).json({ 
+            return res.status(202).json({ 
                 success: false, 
                 message: 'User already exists' 
             });
         }
 
-        // Insert new user
         const [result] = await pool.query(
             'INSERT INTO mrbs_users (level, name, email) VALUES (?, ?, ?)',
             [level, name, email]
@@ -199,6 +197,27 @@ router.post('/addBooking', async (req, res) => {
     try {
         const { area_id, room_id, subject, description, date, start_time, end_time } = req.body;
         const create_by = req.user.emails[0].value
+
+        const [overlaps] = await pool.query(
+            `SELECT * FROM mrbs_entry 
+             WHERE room_id = ? 
+             AND date = ?
+            AND (is_approved = 0 OR is_approved = 1)
+             AND (
+                 (start_time < ? AND end_time > ?) OR 
+                 (start_time < ? AND end_time > ?) OR 
+                 (start_time >= ? AND end_time <= ?) 
+             )`,
+            [room_id, date, end_time, start_time, end_time, start_time, start_time, end_time]
+        );
+
+        if (overlaps.length > 0) {
+            return res.status(202).json({
+                success: false,
+                message: 'Time slot overlaps with existing booking'
+            });
+        }
+
         const [result] = await pool.query(
             'INSERT INTO mrbs_entry (area_id, date, start_time, end_time, room_id, create_by, subject, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [area_id, date, start_time, end_time, room_id, create_by, subject, description]
@@ -223,17 +242,36 @@ router.post('/addBooking', async (req, res) => {
     }
 });
 
-router.post('/listBooking', (req, res) => {
-    // console.log('added');
-    // console.log(req.body);
-    pool.query('SELECT * FROM mrbs_users', (error, results, fields) => {
-        if (error) {
-          console.error('Error executing query:', error);
-          return;
-        }
-        console.log('Table contents:', results);
-      });
-  res.status(201).json({ message: 'added' });
+router.post('/listBookings', async (req, res) => {
+    try {
+        const { area_id, date } = req.body;
+
+        const [results] = await pool.query(
+            `SELECT e.*, r.room_name, a.area_name
+             FROM mrbs_entry e
+             JOIN mrbs_room r ON e.room_id = r.id
+             JOIN mrbs_area a ON e.area_id = a.id
+             WHERE e.area_id = ? 
+             AND DATE(e.date) = DATE(?)
+             AND (e.is_approved = 0 OR e.is_approved = 1)
+             ORDER BY e.start_time ASC`,
+            [area_id, date]
+        );
+
+        
+        res.status(201).json({ 
+            success: true,
+            data: results, 
+            message: 'List of bookings' 
+        });
+    } catch (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Internal server error', 
+            error: error.message 
+        });
+    }
 });
 
 router.post('/listRequests', async (req, res) => {
@@ -278,7 +316,6 @@ router.post('/listMyEntry', async (req, res) => {
     try {
         const { adminEmail } = req.body;
         const userEmail = req.user.emails[0].value;
-        console.log(adminEmail, userEmail)
 
         if (adminEmail !== userEmail) {
             return res.status(403).json({
@@ -293,7 +330,10 @@ router.post('/listMyEntry', async (req, res) => {
              FROM mrbs_entry e
              JOIN mrbs_room r ON e.room_id = r.id
              JOIN mrbs_area a ON e.area_id = a.id
-             WHERE r.room_admin_email = ?`,
+             WHERE r.room_admin_email = ? 
+             AND (e.is_approved = 1 OR e.is_approved = -1)
+             ORDER BY e.date DESC, e.start_time DESC`
+             ,
             [userEmail]
         );
         

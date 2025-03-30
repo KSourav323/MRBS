@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../style/roomtable.css'
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const RoomTable = ({ areaId }) => {
     const [rooms, setRooms] = useState([]);
@@ -15,13 +16,15 @@ const RoomTable = ({ areaId }) => {
               })
           } catch (error) {
             console.error('failed:', error);
-            alert('failed: ' + error.response?.data?.message || 'Unknown error');
+            toast.error('failed: ' + error.response?.data?.message || 'Unknown error', {
+                                      autoClose: 1000
+                                    });
           }
       }, [areaId]);
 
 
   return (
-    <div>
+    <div id='room-table-container'>
       <h2>List of Rooms</h2>
       <table border="1" cellPadding="5" cellSpacing="0">
         <thead>

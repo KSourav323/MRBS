@@ -4,6 +4,8 @@ import Navbar from '../components/navbar'
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import EntryTable from '../components/entryTable';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 
 const Profile = () => {
@@ -11,6 +13,7 @@ const Profile = () => {
     const [requests, setRequests] = useState([]);
     const [updated, setUpdated] = useState(false);
     const userEmail = user?.email;
+    const navigate = useNavigate();
 
     const roleMapping = {
       1: 'user',
@@ -28,7 +31,9 @@ const Profile = () => {
               })
           } catch (error) {
             console.error('failed:', error);
-            alert('failed: ' + error.response?.data?.message || 'Unknown error');
+            toast.error('failed: ' + error.response?.data?.message || 'Unknown error', {
+                                      autoClose: 1000
+                                    });
           }
       }, [updated]);
 
@@ -39,16 +44,50 @@ const Profile = () => {
             .post('http://localhost:5000/api/addApproval', {request_id: requestId, status: status }, { withCredentials: true })
             .then((response) => {
               if (response.status === 201) {
-                alert('successful!');
+                toast.success('Status updated !', {
+                  autoClose: 1000 
+              });
                 setUpdated(!updated)
               }
             })
         } catch (error) {
           console.error('failed:', error);
-          alert('failed: ' + error.response?.data?.message || 'Unknown error');
+          toast.error('failed: ' + error.response?.data?.message || 'Unknown error', {
+                                    autoClose: 1000
+                                  });
         }
       };
     
+
+      const handleMoreInfo = (entryId) => {
+        const selectedEntry = requests.find(entry => entry.id === entryId);
+        navigate('/requestinfo', {
+          state: { 
+            entryData: selectedEntry
+          }
+        });
+    };
+
+    const formatTime = (timeString) => {
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const formatHour = hour % 12 || 12;
+      return `${formatHour}:${minutes} ${ampm}`;
+  };
+
+  const formatTimestamp = (timestamp) => {
+      const date = new Date(timestamp);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours();
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = (hours % 12 || 12).toString().padStart(2, '0');
+      
+      return `${day}-${month}-${year} ${formattedHours}:${minutes} ${ampm}`;
+  };
 
   return (
     <div id='profile-container'>
@@ -59,6 +98,7 @@ const Profile = () => {
 
         </div>
         <div id='approvals'>
+        <h4>Requests Pending</h4>
         {requests && requests.length > 0 ? (
           <table border="1" cellPadding="5" cellSpacing="0" style={{ width: '100%', textAlign: 'left' }}>
         <thead>
@@ -76,13 +116,13 @@ const Profile = () => {
         <tbody>
           {requests.map(request => (
             <tr key={request.id}>
-              <td>{new Date(request.timestamp).toLocaleString()}</td>
+              <td>{formatTimestamp(request.timestamp)}</td>
               <td>{request.create_by}</td>
-              <td>{new Date(request.date).toLocaleString()}</td>
-              <td>{request.start_time}</td>
-              <td>{request.end_time}</td>
+              <td>{formatTimestamp(request.date)}</td>
+              <td>{formatTime(request.start_time)}</td>
+              <td>{formatTime(request.end_time)}</td>
               <td>{request.subject}</td>
-              <td>
+              <td className='btns-cell'>
                 {request.is_approved === 0 ? (
                   <div className="action-buttons">
                     <button 
@@ -104,10 +144,10 @@ const Profile = () => {
                   <span className="status-label rejected">Rejected</span>
                 )}
               </td>
-              <td>go</td>
+              <td className='btns-cell'><button className='info-btn' onClick={() => handleMoreInfo(request.id)}>Info</button></td>
             </tr>
           ))}
-        </tbody>
+        </tbody> 
           </table>
         ) : (
           <div className="no-requests">

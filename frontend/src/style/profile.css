@@ -2,14 +2,102 @@
     width: 100%;
 
     #profile-details{
-        background-color: beige;
+        background-color: rgb(222, 222, 222);
         width: 100%;
+        height: fit-content;
+        padding: 20px;
+        box-sizing: border-box;
+
+        h1, h5{
+            margin: 0;
+            font-weight: 600;
+        }
     }
 
     #approvals{
-        background-color: rgb(158, 158, 116);
-        height: fit-content;
+        
+        min-height: 90px;
         width: 100%;
         margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        h4{
+            font-weight: 500;
+        }
+
+        table {
+            width: 97% !important;
+            border-collapse: collapse;
+            background-color: rgb(254, 255, 255);
+            font-size: 14px;
+            margin: 20px 0;
+            border: none;
+            border-radius: 10px;
+        }
+        
+        thead {
+            background-color: #307c91;
+            color: #fbfbfb;
+            border-radius: 10px;
+        }
+        
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px 15px;
+        }
+        
+        tbody tr {
+            transition: background-color 0.3s ease;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #c3e6eb;
+        }
+
+        .btns-cell{
+            padding: 0px 10px;
+        }
+
+        .action-buttons{
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            box-sizing: border-box;
+
+            .accept-btn, .reject-btn{ 
+                height: 25px;
+                border: none;
+                border-radius: 5px;
+                color: white;
+            }
+            .accept-btn{
+                background-color: #1aae00;
+            }
+            .reject-btn{
+                background-color: #ff5500;
+            }
+        }
+
+        .info-btn{
+            height: 25px;
+            width: 50px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            background-color: #1073bb;
+        }
+        
     }
+
 }
+

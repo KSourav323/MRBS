@@ -1,5 +1,5 @@
 #header{
-    background: linear-gradient(rgb(15, 52, 31), rgb(6, 50, 29));
+    background: linear-gradient(rgb(0, 116, 158), rgb(0, 71, 97));
     min-height: 70px;
     height: max-content;
     width: 100%;
@@ -8,12 +8,11 @@
     align-items: center;
     box-shadow: rgba(0, 0, 0, 0.095) 0px 1px 3px 4px, 
                         rgba(0, 0, 0, 0.06) 0px 5px 2px 0px;
-    
     #title{
         color: white;
         font-size: 15px;
         width: 25%;
-        
+
         #logo{
             background: transparent;
             border: none;
@@ -29,6 +28,8 @@
         justify-content: flex-end;
         align-items: center;
         height: fit-content;
+        margin: 5px;
+        box-sizing: border-box;
         #nav-btn{
             display: flex;
             height: fit-content;
@@ -39,14 +40,15 @@
                 border: none;
                 border-radius: 5px;
                 height: 25px;
-                width: 50px;
+                min-width: 60px;
+                width: fit-content;
                 color: white;
-                margin: 5px;
                 font-size: 12px;
+                text-align: center;
             }
 
             .btns:hover{
-                background-color: rgb(9, 48, 92);
+                background-color: rgb(4, 54, 81);
             }
         }
 
@@ -56,6 +58,31 @@
             align-items: center;
             height: fit-content;
             margin: 10px;
+            border-radius: 10px;
+            height: 30px;
+            background-color: rgb(11, 95, 168);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            #search-bar{
+                border: none;
+                background: transparent;
+                height: 94%;
+                background-color: aliceblue;
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+
+            #search-btn{
+                background-color: rgba(227, 218, 218, 0.968);
+                border: none;
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+                height: 100%;
+                padding: none;
+                margin: none;
+            }
         }
         
     }

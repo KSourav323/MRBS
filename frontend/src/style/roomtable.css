@@ -1,0 +1,42 @@
+#room-table-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    table {
+        width: 97%;
+        border-collapse: collapse;
+        background-color: rgb(254, 255, 255);
+        font-size: 14px;
+        margin: 20px 0;
+        border: none;
+        border-radius: 10px;
+    }
+    
+    thead {
+        background-color: #307c91;
+        color: #fbfbfb;
+        border-radius: 10px;
+    }
+    
+    th {
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+    }
+    
+    td {
+        padding: 12px 15px;
+    }
+    
+    tbody tr {
+        transition: background-color 0.3s ease;
+    }
+    
+    tbody tr:nth-child(even) {
+        background-color: #c3e6eb;
+    }
+
+
+}

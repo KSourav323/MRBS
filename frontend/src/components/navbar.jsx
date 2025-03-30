@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { login, logout as logoutAction } from '../redux/actions.js'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -64,6 +65,7 @@ const Navbar = () => {
 
   return (
     <div id='header'>
+          <ToastContainer />
             <div id='title'>
                 <button id='logo' onClick={home}>NITC MRBS</button>
             </div>
@@ -73,11 +75,9 @@ const Navbar = () => {
                     <button id='search-btn'>Search</button>
                 </div>
                 <div id='nav-btn'>
-                    <button className='btns'>Help</button>
                     {user ? (
                         <div>
-                            <button className='btns'>Report</button>
-                            <button className='btns'>Import</button>
+                            <button className='btns' onClick={home}>Home</button>
                             <button className='btns' onClick={goToRooms}>Rooms</button>
                             <button className='btns' onClick={goToUsers}>Users</button>
                             <button className='btns' onClick={goToProfile}>{user.given_name[0].toUpperCase() + user.given_name.slice(1)}</button>

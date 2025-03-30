@@ -6,10 +6,25 @@ const pool = require('../functions/db');
 router.get('/login/success', async (req, res) => {
   if (req.user) {
 
+    const userEmail = req.user.emails[0].value;
+
     const [userLevel] = await pool.query(
       'SELECT level FROM mrbs_users WHERE email = ?',
-      [req.user.emails[0].value]
+      [userEmail]
     );
+
+    if (!userLevel.length) {
+      req.logout((err) => {
+        if (err) {
+          console.error('Logout error:', err);
+        }
+      });
+      return res.status(403).json({
+        success: false,
+        message: 'Email not authorized'
+      });
+    }
+
 
     res.status(201).json({
       error: true,
@@ -36,14 +51,39 @@ router.get('/login/failed', (req, res) => {
 });
 
 router.get('/google/callback', 
-  passport.authenticate('google', { 
-    successRedirect: process.env.CLIENT_URL ,
-    failureRedirect: '/login/failed'
-  })
+  passport.authenticate('google', { failureRedirect: '/login/failed' }),
+  async (req, res) => {
+    try {
+      const userEmail = req.user.emails[0].value;
+      
+      const [user] = await pool.query(
+        'SELECT * FROM mrbs_users WHERE email = ?',
+        [userEmail]
+      );
+
+      if (!user.length) {
+        req.logout((err) => {
+          if (err) {
+            console.error('Logout error:', err);
+          }
+          res.redirect('/login/failed');
+        });
+        return;
+      }
+
+      res.redirect(process.env.CLIENT_URL);
+    } catch (error) {
+      console.error('Auth error:', error);
+      res.redirect('/login/failed');
+    }
+  }
 );
 
 router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'] ,
+    // hd: 'nitc.ac.in'
+  })
 );
 
 router.get("/logout", (req, res, next) => {

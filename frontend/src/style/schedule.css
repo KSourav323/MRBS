@@ -5,7 +5,9 @@
 
     #schedule-table{
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0 1; 
+        table-layout: fixed; 
 
         #schedule-head{
             background-color: rgba(201, 201, 201, 0.329);
@@ -24,8 +26,47 @@
         tbody tr:nth-child(even) {
             background-color: rgba(0, 255, 174, 0.1);
         }
+
+        tbody tr td {
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        tbody tr td:hover {
+            background-color: rgba(0, 123, 255, 0.2) !important; 
+        }
+
+        tbody tr td:hover ~ .time-col,
+        tbody tr:hover td:first-child {
+            background-color: rgba(32, 188, 193, 0.532) !important;
+            font-weight: bold;
+        }
+
+
     }
 
+    .booking-subject {
+        display: block;
+        text-align: center;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
+        padding: 2px 4px;
+        box-sizing: border-box;
+    }
+
+    .booking-cell.approved {
+        background-color: rgb(144, 255, 179) !important;
+        z-index: 2;
+    }
+    
+    .booking-cell.pending {
+        background-color: rgb(235, 255, 135) !important;
+        z-index: 2;
+    }
+    
 
 
     .schedule-row{
@@ -34,11 +75,17 @@
     }
 
     .time-col{
-        border-bottom: 1px solid rgb(202, 202, 202);
         width: 70px;
         font-size: 13px;
         text-align: center;
     }
+
+    .book-button{
+        height: 100%;
+        width: 100%;
+        margin: none;
+    }
+
     
 }
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../style/usertable.css'
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const UserTable = () => {
     const [users, setUsers] = useState([]);
@@ -16,13 +17,15 @@ const UserTable = () => {
               })
           } catch (error) {
             console.error('failed:', error);
-            alert('failed: ' + error.response?.data?.message || 'Unknown error');
+           toast.error('failed: ' + error.response?.data?.message || 'Unknown error', {
+                                     autoClose: 1000
+                                   });
           }
       }, []);
 
 
   return (
-    <div>
+    <div id='user-table-container'>
       <h2>List of Users</h2>
       <table border="1" cellPadding="5" cellSpacing="0">
         <thead>

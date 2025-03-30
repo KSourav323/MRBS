@@ -2,10 +2,8 @@ const pool = require('../functions/db');
 
 const auth = (req, res, next) => {
   if (req.isAuthenticated()) {
-    console.log('Authenticated');
     return next();
   }
-  console.log('user is not authenticated');
   res.status(200).json({
     message: 'Not authenticated'
   });
