@@ -218,10 +218,27 @@ router.post('/addBooking', async (req, res) => {
             });
         }
 
-        const [result] = await pool.query(
-            'INSERT INTO mrbs_entry (area_id, date, start_time, end_time, room_id, create_by, subject, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [area_id, date, start_time, end_time, room_id, create_by, subject, description]
-        );
+        const [areaData] = await pool.query('SELECT approval_enabled FROM mrbs_area WHERE id = ?', [area_id]);
+
+        if (areaData.length === 0) {
+            return res.status(400).json({ success: false, message: 'Invalid area_id' });
+        }
+        const approval_enabled = areaData[0].approval_enabled;
+
+
+        if (approval_enabled == 1) {
+            query = `INSERT INTO mrbs_entry 
+                     (area_id, date, start_time, end_time, room_id, create_by, subject, description)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+            values = [area_id, date, start_time, end_time, room_id, create_by, subject, description];
+        } else {
+            query = `INSERT INTO mrbs_entry 
+                     (area_id, date, start_time, end_time, room_id, create_by, subject, description, is_approved)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            values = [area_id, date, start_time, end_time, room_id, create_by, subject, description, 1];
+        }
+
+        const [result] = await pool.query(query, values);
 
         if (result.affectedRows === 1) {
             res.status(201).json({

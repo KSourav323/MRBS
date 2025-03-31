@@ -6,11 +6,14 @@ import Schedule from '../components/schedule.jsx';
 import Navbar from '../components/navbar.jsx';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import { IoMdClose } from "react-icons/io";
+import { RxHamburgerMenu } from "react-icons/rx";
 
 const Index = () => {  
   const [areas, setAreas] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
     const [selectedArea, setSelectedArea] = useState(null);
+    const [showSidebar, setShowSidebar] = useState(true);
     const user = useSelector(state => state.user);
     const date = new Date(selectedDate);
 
@@ -70,7 +73,7 @@ const Index = () => {
         if (selectedArea) {
             setSelectedArea(selectedArea);
         }
-    };
+    }
 
   return (
     <div id='container'> 
@@ -78,20 +81,37 @@ const Index = () => {
         <Navbar/>
         
         <div id='body'>
-            <div id='sidebar'>
-              <DatePicker 
-                        onDateSelect={handleDateSelect}
-                        selectedDate={selectedDate}
-                    /> 
+            <div
+                id="sidebar"
+                style={{
+                transform: showSidebar ? 'translateX(0)' : 'translateX(-100%)',
+                }}
+            >
+                 <button id='burger-btn' style={{
+                        left: showSidebar ? '0px' : '20px',
+                        transition: 'left 0.3s ease',
+                        }}
+                 onClick={() => setShowSidebar(!showSidebar)}>
+                        <p>Choose a date</p>
+                        
+                        {showSidebar ? <IoMdClose className='icon'/> : <RxHamburgerMenu className='icon'/>}
+                </button>
+                <DatePicker onDateSelect={handleDateSelect} selectedDate={selectedDate} />
             </div>
-            <div id='content'>
-                
+            
+            <div id='content' style={{
+                marginLeft: showSidebar ? '230px' : '0',
+                transition: 'margin-left 0.3s ease',
+                padding: '10px'
+                }}>
                   <div id='opts'>
-                    <h3>
-                        {selectedDate 
-                            ? `${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}, ${selectedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`
-                            : 'Click a date'}
+                       
+                        <h3>
+                            {selectedDate 
+                                ? `${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}, ${selectedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                                : 'Click a date'}
                         </h3>
+                    
 
                     {areas ? (
                         <select id="area-select" onChange={handleAreaChange}>
