@@ -8,12 +8,21 @@ import { toast } from 'react-toastify';
 
 const Users = () => {
     const [showForm, setShowForm] = useState(false);
+    const [showUploader, setShowUploader] = useState(false);
     const [usersUpdated, setUsersUpdated] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploadStatus, setUploadStatus] = useState('');
+
     const user = useSelector(state => state.user);
 
     const isAdmin = () => {
       return user?.user?.level > 1;
     };
+
+    const handleFileChange = (e) => {
+      setSelectedFile(e.target.files[0]);
+    };
+  
 
   const [formData, setFormData] = useState({
     name: '',
@@ -58,13 +67,48 @@ const Users = () => {
     }
   };
 
+  const handleFileSubmit = async (e) => {
+    e.preventDefault();
+  
+    if (!selectedFile) {
+      setUploadStatus('Please select a CSV file.');
+      return;
+    }
+  
+    const formFileData = new FormData();
+    formFileData.append('csvFile', selectedFile);
+  
+    try {
+      axios
+        .post('http://localhost:5000/api/import', formFileData, { 
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+         withCredentials: true })
+        .then((response) => {
+          if (response.status === 201) {
+            toast.success('Import successful !', {
+              autoClose: 1000
+          });
+            setUsersUpdated(prev => !prev);
+            setShowUploader(false);
+          }
+        })
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setUploadStatus('Error uploading file.');
+    }
+  };
     
   return (
     <div id='users-container'>
         <Navbar/>
         {isAdmin() && (
           <div id='admin-panel'>
-              <button id='show-form-btn' onClick={() => setShowForm(!showForm)}>{showForm ? 'Close' : 'Add User'}</button>
+            <div id='admin-btns'>
+              <button className='show-form-btn' onClick={() => {setShowUploader(false), setShowForm(!showForm)}}>{showForm ? 'Close' : 'Add User'}</button>
+              <button className='show-form-btn' onClick={() => {setShowForm(false), setShowUploader(!showUploader)}}>{showUploader ? 'Close' : 'Import from file'}</button>
+            </div>
               {showForm && (
             <div className='popup-overlay'>
               <div className='popup-content'>
@@ -116,6 +160,16 @@ const Users = () => {
                   
                 </form>
               </div>
+            </div>
+          )}
+          {showUploader && (
+            <div id='uploader-overlay'>
+              <h3>Upload CSV File</h3>  
+              <form onSubmit={handleFileSubmit}>
+                <input type="file" accept=".csv, .xlsx, .xls" onChange={handleFileChange} />
+                <button type="submit">Upload</button>
+              </form>
+              {uploadStatus && <p>{uploadStatus}</p>}
             </div>
           )}
           </div>

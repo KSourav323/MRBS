@@ -2,8 +2,37 @@ const express = require('express');
 const router = express.Router();
 const {auth, isAdmin} = require('../middleware/auth');
 const pool = require('../functions/db');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const csvParser = require('csv-parser');
+const xlsx = require('xlsx');    
 
 router.use(auth);
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(__dirname, '../uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir);
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + '-' + file.originalname);
+    }
+  });
+
+const fileFilter = (req, file, cb) => {
+const allowedExtensions = /(\.csv|\.xlsx|\.xls)$/i;
+if (allowedExtensions.test(path.extname(file.originalname))) {
+    cb(null, true);
+} else {
+    cb(new Error('Only CSV and Excel files are allowed.'), false);
+}
+};
+
+const upload = multer({ storage, fileFilter });
 
 const roleToLevel = {
     user: 1,
@@ -414,6 +443,81 @@ router.post('/addApproval', async (req, res) => {
         });
     }
 });
+
+router.post('/import', upload.single('csvFile'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file uploaded.' });
+      }
+  
+      const filePath = req.file.path;
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      let dataRows = [];
+  
+      if (ext === '.csv') {
+        dataRows = await new Promise((resolve, reject) => {
+          const results = [];
+          fs.createReadStream(filePath)
+            .pipe(csvParser())
+            .on('data', (data) => results.push(data))
+            .on('end', () => resolve(results))
+            .on('error', reject);
+        });
+      } 
+
+      else if (ext === '.xlsx' || ext === '.xls') {
+        const workbook = xlsx.readFile(filePath);
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        dataRows = xlsx.utils.sheet_to_json(sheet);
+      } 
+      else {
+        return res.status(400).json({ success: false, message: 'Unsupported file type.' });
+      }
+  
+      let insertedCount = 0;
+  
+      for (const row of dataRows) {
+        const {level, name, email } = row;
+  
+        if (!name || !email) {
+          console.log('Skipping row due to missing name or email:', row);
+          continue;
+        }
+
+        const [existingUser] = await pool.query(
+          'SELECT * FROM mrbs_users WHERE email = ?',
+          [email]
+        );
+        if (existingUser.length > 0) {
+          console.log(`User with email ${email} already exists. Skipping.`);
+          continue;
+        }
+  
+        const [result] = await pool.query(
+          'INSERT INTO mrbs_users (level, name, email) VALUES (?, ?, ?)',
+          [level, name, email]
+        );
+  
+        if (result.affectedRows === 1) {
+          insertedCount++;
+        }
+      }
+  
+      return res.status(201).json({
+        success: true,
+        message: 'File imported successfully.',
+        insertedCount
+      });
+    } catch (error) {
+      console.error('Error importing:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Internal server error' 
+      });
+    }
+  });
+  
 
 
 module.exports = router;
