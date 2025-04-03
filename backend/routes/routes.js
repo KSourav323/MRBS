@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');   
 const router = express.Router();
 const {auth, isAdmin} = require('../middleware/auth');
@@ -7,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const csvParser = require('csv-parser');
 const xlsx = require('xlsx');    
+const nodemailer = require('nodemailer');
 
 router.use(auth);
 
@@ -38,6 +40,39 @@ const roleToLevel = {
     user: 1,
     admin: 2
   };
+
+const statusMap = {
+    '-1' : 'rejected',
+    '1' : 'accepted'
+  };
+
+  async function sendEmail(to, subject, text, html) {
+    let transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com', // e.g., smtp.gmail.com for Gmail
+      port: 465 ,                // 465 for secure, 587 for non-secure
+      secure: true,            // true for port 465, false for 587
+      auth: {
+        user: process.env.ADMIN_MAIL,   // your email address
+        pass: process.env.MAIL_APP_PASSWORD,        // your email password or app password
+      },
+    });
+  
+    let mailOptions = {
+      from: '"MRBS Admin" <mrbs@gmail.com>', // sender address
+      to,                                          // list of receivers
+      subject,                                     // subject line
+      text,                                        // plain text body
+      html,                                        // html body (optional)
+    };
+  
+    try {
+      let info = await transporter.sendMail(mailOptions);
+      return info;
+    } catch (error) {
+      console.error('Error sending email:', error);
+      throw error;
+    }
+  }
 
 router.post('/addUser', isAdmin, async (req, res) => {
     try {
@@ -247,7 +282,9 @@ router.post('/addBooking', async (req, res) => {
             });
         }
 
-        const [areaData] = await pool.query('SELECT approval_enabled FROM mrbs_area WHERE id = ?', [area_id]);
+        const [areaData] = await pool.query('SELECT * FROM mrbs_area WHERE id = ?', [area_id]);
+        const adminEmail = areaData[0].area_admin_email;
+        const areaName = areaData[0].area_name;
 
         if (areaData.length === 0) {
             return res.status(400).json({ success: false, message: 'Invalid area_id' });
@@ -270,6 +307,9 @@ router.post('/addBooking', async (req, res) => {
         const [result] = await pool.query(query, values);
 
         if (result.affectedRows === 1) {
+
+            sendEmail(adminEmail, 'MRBS booking', `There is a new request for ${areaName} waiting for your approval.`)
+
             res.status(201).json({
                 success: true,
                 message: 'entry added successfully',
@@ -419,6 +459,14 @@ router.post('/addApproval', async (req, res) => {
             });
         }
 
+        const [entryData] = await pool.query(
+            'SELECT create_by FROM mrbs_entry WHERE id = ?',
+            [request_id]
+        );
+
+        const createByEmail = entryData[0].create_by;
+        statusWord = statusMap[status];
+
 
         const [result] = await pool.query(
             'UPDATE mrbs_entry SET is_approved = ? WHERE id = ?',
@@ -427,6 +475,9 @@ router.post('/addApproval', async (req, res) => {
 
 
         if (result.affectedRows === 1) {
+
+            sendEmail(createByEmail, 'MRBS booking', `Your request has been ${statusWord}.`)
+
             res.status(201).json({
                 success: true,
                 message: 'successful'
