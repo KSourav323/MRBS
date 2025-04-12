@@ -3,6 +3,7 @@ import '../style/schedule.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 const Schedule = ({ areaId, selectedDate }) => {
   const navigate = useNavigate();
@@ -122,6 +123,13 @@ const Schedule = ({ areaId, selectedDate }) => {
       };
 
     const bookSlot = (roomId, time) => {
+        const [hours, minutes] = time.split(':').map(Number);
+        const bookingDateTime = new Date(selectedDate);
+        bookingDateTime.setHours(hours, minutes, 0, 0);
+
+        const now = new Date();
+        
+        if (bookingDateTime > now) {
       if (!user?.isLoggedIn) {
         window.location.href = 'http://localhost:5000/auth/google/callback';
         return;
@@ -135,6 +143,9 @@ const Schedule = ({ areaId, selectedDate }) => {
           endTime: addOneHour(time)
         }
       });
+    }else{ 
+        toast.warning('Please select a future time !');
+    }
     }
 
     const getTimeSlotsBetween = (start, end) => {

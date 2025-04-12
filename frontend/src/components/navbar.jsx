@@ -71,8 +71,8 @@ const Navbar = () => {
             </div>
             <div id='nav'>
                 <div id='search'>
-                    <input type='text' placeholder='Search' id='search-bar'></input>
-                    <button id='search-btn'>Search</button>
+                    {/* <input type='text' placeholder='Search' id='search-bar'></input> */}
+                    {/* <button id='search-btn'>Search</button> */}
                 </div>
                 <div id='nav-btn'>
                     {user ? (

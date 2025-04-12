@@ -46,33 +46,33 @@ const statusMap = {
     '1' : 'accepted'
   };
 
-  async function sendEmail(to, subject, text, html) {
-    let transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com', // e.g., smtp.gmail.com for Gmail
-      port: 465 ,                // 465 for secure, 587 for non-secure
-      secure: true,            // true for port 465, false for 587
-      auth: {
-        user: process.env.ADMIN_MAIL,   // your email address
-        pass: process.env.MAIL_APP_PASSWORD,        // your email password or app password
-      },
-    });
-  
-    let mailOptions = {
-      from: '"MRBS Admin" <mrbs@gmail.com>', // sender address
-      to,                                          // list of receivers
-      subject,                                     // subject line
-      text,                                        // plain text body
-      html,                                        // html body (optional)
-    };
-  
-    try {
-      let info = await transporter.sendMail(mailOptions);
-      return info;
-    } catch (error) {
-      console.error('Error sending email:', error);
-      throw error;
-    }
-  }
+async function sendEmail(to, subject, text, html) {
+let transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com', // e.g., smtp.gmail.com for Gmail
+    port: 465 ,                // 465 for secure, 587 for non-secure
+    secure: true,            // true for port 465, false for 587
+    auth: {
+    user: process.env.ADMIN_MAIL,   // your email address
+    pass: process.env.MAIL_APP_PASSWORD,        // your email password or app password
+    },
+});
+
+let mailOptions = {
+    from: '"MRBS Admin" <mrbs@gmail.com>', // sender address
+    to,                                          // list of receivers
+    subject,                                     // subject line
+    text,                                        // plain text body
+    html,                                        // html body (optional)
+};
+
+try {
+    let info = await transporter.sendMail(mailOptions);
+    return info;
+} catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+}
+}
 
 router.post('/addUser', isAdmin, async (req, res) => {
     try {
